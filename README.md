@@ -12,10 +12,11 @@ use JMasci\MatrixBuilder;
 
 $matrix = new MatrixBuilder();
 
-$matrix->set( 'row_1', 'col_1', 'value 1,1' );
-$matrix->set( 'row_1', 'col_2', 'value 1,2' );
-$matrix->set( 'row_2', 'col_1', 'value 2,1' );
-$matrix->set( 'row_2', 'col_2', 'value 2,2' );
+// sets values. Most methods not starting with "get_" will return the instance.
+$matrix->set( 'row_1', 'col_1', 'value 1,1' )
+->set( 'row_1', 'col_2', 'value 1,2' )
+->set( 'row_2', 'col_1', 'value 2,1' )
+->set( 'row_2', 'col_2', 'value 2,2' );
 
 $matrix->get( 'row_1', 'col_2' );
 // "value 1,2"
@@ -26,13 +27,10 @@ $matrix->get_column( 'col_1' );
 $matrix->get_row( 'row_1' );
 // [ 'col_1' => 'value 1,1', 'col_2' => 'value 1,2' ]
 
-// put row_2 first.
-$matrix->apply_row_sort( [ 'row_2' ]);
+// puts row 2 first, then put row 1 back to first
+$matrix->apply_row_sort( [ 'row_2' ])->apply_row_sort( [ 'row_1']);
 
-// put row_1 first again.
-$matrix->apply_row_sort( [ 'row_1' ]);
-
-// columns not found are ignored
+// puts given column indexes first. columns passed in that don't exist are ignored.
 $matrix->apply_column_sort( [ 'col_that_doesnt_exist', 'col_1' ]);
 
 // or you can sort via callback (works for both rows/columns)
@@ -48,32 +46,32 @@ $matrix->apply_column_sort( call_user_func( function( $keys ) {
 }, $matrix->get_column_keys() ));
 
 // add another row (but using an existing column)
-$matrix->set( 'row_3', 'col_1', 99 );
-
-$matrix->get_row_keys(); 
-// [ 'row_1', 'row_2', 'row_3 ]
-
-$matrix->get_dimensions();
+$matrix->set( 'row_3', 'col_1', 99 )->get_dimensions()
 // [ 3, 2 ]
 
-$matrix->get_column_keys(); 
-// [ 'col_1', 'col_2' ] (same as before)
+// in case its not clear...
+$matrix->get_row_keys();
+// [ 'row_1', 'row_2', 'row_3 ]
 
-// sets row_3/col_3 to its old value + 5 or just 5.
+// no change here...
+$matrix->get_column_keys();
+// [ 'col_1', 'col_2' ]
+
+// the set function accepts a callback which will provide the previous value. 
+// this sets a new column to its last value + 5 or 5 by default. 
 $matrix->set( 'row_3', 'col_3', $matrix::get_incrementer( 5 ) );
 
-// back to where we started...
-$matrix->delete_row( 'row_3' );
-$matrix->delete_column( 'col_3' );
+// delete what we just added.
+$matrix->delete_row( 'row_3' )->delete_column( 'row_3' );
 
-// can do this too...
+// you can also set a new row or column using a callback that is provided the existing row or column
 // $matrix->set_row_totals( 'some_reducer_function' );
 // $matrix->set_column_totals( 'some_reducer_function' );
-
+ 
 print_r( $matrix->get_matrix() );
 ```
 
-Results in:
+Is just an array of arrays:
 
 ```
 Array
@@ -110,14 +108,11 @@ foreach ( query_posts_and_join_authors() as $post ) {
     $matrix->set( $post->author_name, date( 'm Y', strtotime( $post->post_date ) ), $matrix::get_incrementer(1));
 }
 
-// sort keys alphabetically
+// sort rows/cols
 $matrix->sort_rows( function( $keys ){
     asort( $keys );
     return $keys;
-});
-
-// sort cols
-$matrix->sort_columns( function( $keys ){
+})->sort_columns( function( $keys ){
     sort( $keys, SORT_NUMERIC );
     return $keys;
 });

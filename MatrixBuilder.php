@@ -11,8 +11,6 @@ namespace JMasci;
  * Row 1   | Point 1-1 | Point 1-2 | Point 1-3
  * Row 2   | Point 2-1 | Point 2-2 | Point 2-3
  *
- * todo: make fluent?
- *
  * todo: Add validation to the set_matrix method (possibly mutating input instead of throwing an error if some rows are missing some columns).
  *
  * To display your data in an HTML table with row and column headings, @see self::convert_to_record_set_with_headings().
@@ -86,10 +84,10 @@ Class MatrixBuilder
      * @param $row_key
      * @param $column_key
      * @param $value
+     * @return $this
      */
     public function set($row_key, $column_key, $value)
     {
-
         // if we properly register rows and columns, then there is no need for isset checks below.
         $this->register_row($row_key);
         $this->register_column($column_key);
@@ -100,6 +98,8 @@ Class MatrixBuilder
         } else {
             $this->matrix[$row_key][$column_key] = $value;
         }
+
+        return $this;
     }
 
     /**
@@ -107,14 +107,17 @@ Class MatrixBuilder
      * todo: its unlikely but possible we'll have numeric array keys. If so, we may need to re-index the array after deletion.
      *
      * @param $row_key
+     * @return $this
      */
     public function delete_row($row_key)
     {
         unset($this->matrix[$row_key]);
+        return $this;
     }
 
     /**
      * @param $column_key
+     * @return $this
      */
     public function delete_column($column_key)
     {
@@ -122,18 +125,19 @@ Class MatrixBuilder
             // do not check isset because then we'll fail to remove null values.
             unset($this->matrix[$row_key][$column_key]);
         }
+        return $this;
     }
 
     /**
      * Adds a row to the matrix with null values.
      *
      * @param $row_key
+     * @return $this
      */
     private function register_row($row_key)
     {
-
         if (isset($this->matrix[$row_key])) {
-            return;
+            return $this;
         }
 
         $empty_row = [];
@@ -148,12 +152,15 @@ Class MatrixBuilder
         }
 
         $this->matrix[$row_key] = $empty_row;
+
+        return $this;
     }
 
     /**
      * Adds a column to the matrix with null values.
      *
      * @param $column_key
+     * @return $this
      */
     private function register_column($column_key)
     {
@@ -162,6 +169,8 @@ Class MatrixBuilder
                 $this->matrix[$r][$column_key] = null;
             }
         }
+
+        return $this;
     }
 
     /**
@@ -262,10 +271,12 @@ Class MatrixBuilder
      * P.s. you could use this to re-order the matrix.
      *
      * @param array $matrix
+     * @return $this
      */
     public function set_matrix(array $matrix)
     {
         $this->matrix = $matrix;
+        return $this;
     }
 
     /**
@@ -277,10 +288,10 @@ Class MatrixBuilder
      *
      * @param callable $callback
      * @param string $column_key
+     * @return $this
      */
     public function set_row_totals(callable $callback, $column_key = self::DEFAULT_TOTAL_KEY)
     {
-
         // run the callback for each row
         foreach ($this->get_row_keys() as $key) {
             $value = call_user_func_array($callback, [$this->get_row($key), $key]);
@@ -292,15 +303,17 @@ Class MatrixBuilder
             unset($keys[$column_key]);
             return array_merge($keys, [$column_key]);
         });
+
+        return $this;
     }
 
     /**
      * @param callable $callback
      * @param string $row_key
+     * @return $this
      */
     public function set_column_totals(callable $callback, $row_key = self::DEFAULT_TOTAL_KEY)
     {
-
         // run the callback for each column
         foreach ($this->get_column_keys() as $key) {
             $value = $callback($this->get_column($key), $key);
@@ -312,6 +325,8 @@ Class MatrixBuilder
             unset($keys[$row_key]);
             return array_merge($keys, [$row_key]);
         });
+
+        return $this;
     }
 
     /**
@@ -330,20 +345,26 @@ Class MatrixBuilder
      * Passing in empty array -> no-op.
      *
      * @param callable $callback
+     * @return $this
      */
     public function sort_rows(callable $callback)
     {
         // passing in a non-array will result in an error.
         // For now, not failing silently.
         $this->apply_row_sort(call_user_func($callback, $this->get_row_keys()));
+
+        return $this;
     }
 
     /**
      * @param callable $callback
+     * @return $this
      */
     public function sort_columns(callable $callback)
     {
         $this->apply_column_sort(call_user_func($callback, $this->get_column_keys()));
+
+        return $this;
     }
 
     /**
@@ -356,22 +377,27 @@ Class MatrixBuilder
      * Keys passed in that are not in the data are ignored.
      *
      * @param array $keys
+     * @return $this
      */
     public function apply_row_sort(array $keys)
     {
         $this->matrix = self::apply_sort_order_to_data($keys, $this->matrix);
+
+        return $this;
     }
 
     /**
      * @param array $keys
      * @see apply_row_sort
-     *
+     * @return $this
      */
     public function apply_column_sort(array $keys)
     {
         foreach ($this->matrix as $r => $vector) {
             $this->matrix[$r] = self::apply_sort_order_to_data($keys, $vector);
         }
+
+        return $this;
     }
 
     /**
@@ -381,7 +407,6 @@ Class MatrixBuilder
      */
     private static function apply_sort_order_to_data(array $ordered_keys, array $data)
     {
-
         $k = array_keys($data);
 
         // strips invalid keys
@@ -418,11 +443,11 @@ Class MatrixBuilder
      */
     public function convert_to_record_set_with_headings($origin_label = "", $row_labels = [], $column_labels = [], $row_heading_key = self::DEFAULT_HEADING_KEY, $column_heading_key = self::DEFAULT_HEADING_KEY)
     {
-
         // we could do this with a bunch of foreach loops and some interesting looking array merges,
         // or, we can use a complicated mix of the methods we already built. To be honest, it's not
         // super easy to follow using the latter method, but, that's what I did.
 
+        // mutate the clone, not $this
         $self = clone $this;
 
         // insert the header row (at the end)
