@@ -8,5 +8,10 @@
             "email": "masci.joel@gmail.com"
         }
     ],
+    "autoload" : {
+        "psr-4": {
+            "JMasci\\MatrixBuilder\\": ""
+        }
+    },
     "require": {}
 }
