@@ -1,6 +1,6 @@
 <?php
 
-namespace JMasci;
+namespace JMasci\MatrixBuilder;
 
 /**
  * A class to build a matrix dynamically.
@@ -18,7 +18,7 @@ namespace JMasci;
  * Class MatrixBuilder
  * @package JMasci
  */
-Class MatrixBuilder
+Class Matrix
 {
 
     const DEFAULT_HEADING_KEY = "__heading";

@@ -1,6 +1,6 @@
 {
     "name": "jmasci/matrix-builder",
-    "description": "Dynamically builds (and modifies, sums, and sorts) a matrix and can export data for printing in a table that contains both row and column labels.",
+    "description": "Builds a matrix dynamically",
     "type": "library",
     "authors": [
         {
