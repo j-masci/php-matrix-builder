@@ -286,6 +286,12 @@ Class Matrix
      * from the other data points, except for their key. Be aware of this
      * if you call this more than once for some reason.
      *
+     * Sets X1, X2, and $column_key below
+     *
+     *      |   c1   |   c2   | $column_key |
+     * r1   |   p11  |   p12  |     X1      |
+     * r2   |   p21  |   p22  |     X2      |
+     *
      * @param callable $callback
      * @param string $column_key
      * @return $this
@@ -308,6 +314,13 @@ Class Matrix
     }
 
     /**
+     * Sets X1, X2, and $row_key below
+     *
+     *          |   c1   |   c2   |
+     * r1       |   p11  |   p12  |
+     * r2       |   p21  |   p22  |
+     * $row_key |   X1   |    X2  |
+     *
      * @param callable $callback
      * @param string $row_key
      * @return $this
@@ -401,6 +414,8 @@ Class Matrix
     }
 
     /**
+     * Orders $data according to the array of keys in $ordered_keys
+     *
      * @param array $ordered_keys
      * @param array $data
      * @return array

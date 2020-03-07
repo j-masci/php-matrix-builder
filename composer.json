@@ -1,6 +1,6 @@
 {
     "name": "jmasci/matrix-builder",
-    "description": "Builds a matrix dynamically",
+    "description": "A mutable matrix object with methods for sorting rows/columns, adding/removing cells, and a few other things.",
     "type": "library",
     "authors": [
         {
@@ -10,8 +10,16 @@
     ],
     "autoload" : {
         "psr-4": {
-            "JMasci\\MatrixBuilder\\": ""
+            "JMasci\\MatrixBuilder\\": "src/"
         }
     },
-    "require": {}
+    "autoload-dev": {
+        "psr-4": {
+            "JMasci\\MatrixBuilder\\Tests\\": "tests/"
+        }
+    },
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "4.*"
+    }
 }
