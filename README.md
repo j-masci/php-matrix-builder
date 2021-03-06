@@ -134,9 +134,3 @@ Renders a table such as...
 | January 2020          | 22       | 7        | 15       | 44      |
 | February 2020         | 0        | 0        | 0        | 0       |
 | __Total               | 42       | 16       | 22       | 80      |
-
-Possible Future Todo: Allow cells to use formula's as well as primitive values. Formula's can be
-an issue if they involve circular dependencies. Ie. If cell D is the sum A, B, and C, but cell B 
-is equal to cell D times two, then there's nothing we can do to resolve this.
-Nevertheless, maybe there is a way we can catch these circular dependencies and not allow them to exist
-in the first place, but, catching them is also not going to be easy.  
