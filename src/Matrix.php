@@ -505,6 +505,7 @@ Class Matrix
             $prev += $plus_equals;
             return $prev;
         };
+
     }
 
     /**

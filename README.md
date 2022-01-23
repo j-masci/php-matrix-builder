@@ -1,79 +1,41 @@
-Dynamically builds (and modifies, sums, and sorts) a matrix and can export data for printing in a table that contains both row and column labels.
+A matrix in this context is an indexed array of indexed arrays. This library is a single class that lets you incrementally build such a matrix, and then offers some useful row and column methods such as simple getters/setters, deletion of entire rows or columns, and sorting of rows or columns. 
 
-Internally the matrix is just an array of arrays (of equal length), but the object has methods to deal with both
-rows and columns, because in general, row and column operations must be performed differently (normally, column
-operations are much less trivial). The object let's you not worry about the differences and provides a column
-method for every row method with the same name.
+Is a class/encapsulation the best way to do this? Not sure.
 
-### Usage
+Couldn't we just use primitive data structures and write pure functions? Probably. One of the reasons I used a class was that column operations usually end up being a lot more complex than row operations, for example, to delete a column, you loop through each row and delete the column from within each one. While deleting a row is a simple line of code. What I could have done was write a function to convert rows into columns (and column into rows). Then any function you write to operate on rows could be achieved on columns by calling the "inversion" function before and after the row operation (hope that makes sense). Anyways, for this library, all the functionality is wrapped up in a class which mostly encapsulates its data but does not prevent you from manipulating the internal data structure if you need to. Alternatively, you could extend the class and add methods if you need to.  
+
+### Basic Usage
+
+In general, every row method has a corresponding column method.
 
 ```php
 use JMasci\MatrixBuilder;
 
+// create a new empty matrix
 $matrix = new MatrixBuilder();
 
-// sets values. Most methods not starting with "get_" will return the instance.
-$matrix->set( 'row_1', 'col_1', 'value 1,1' )
-->set( 'row_1', 'col_2', 'value 1,2' )
-->set( 'row_2', 'col_1', 'value 2,1' )
-->set( 'row_2', 'col_2', 'value 2,2' );
+// sets some values.
+$matrix->set( 'row_1', 'col_1', 'value 1,1' );
+$matrix->set( 'row_1', 'col_2', 'value 1,2' );
+$matrix->set( 'row_2', 'col_1', 'value 2,1' );
+$matrix->set( 'row_2', 'col_2', 'value 2,2' );
 
+// returns "value 1,2"
 $matrix->get( 'row_1', 'col_2' );
-// "value 1,2"
 
+// returns [ 'row_1' => 'value 1,1', 'row_2' => 'value 2,1' ]
 $matrix->get_column( 'col_1' );
-// [ 'row_1' => 'value 1,1', 'row_2' => 'value 2,1' ]
 
+// returns [ 'col_1' => 'value 1,1', 'col_2' => 'value 1,2' ]
 $matrix->get_row( 'row_1' );
-// [ 'col_1' => 'value 1,1', 'col_2' => 'value 1,2' ]
 
-// puts row 2 first, then put row 1 back to first
-$matrix->apply_row_sort( [ 'row_2' ])->apply_row_sort( [ 'row_1']);
-
-// puts given column indexes first. columns passed in that don't exist are ignored.
-$matrix->apply_column_sort( [ 'col_that_doesnt_exist', 'col_1' ]);
-
-// or you can sort via callback (works for both rows/columns)
-$matrix->sort_columns( function( $keys ) {
-    asort( $keys );
-    return $keys;
-});
-
-// which is just a shorter way of doing this...
-$matrix->apply_column_sort( call_user_func( function( $keys ) {    
-    asort( $keys );
-    return $keys;
-}, $matrix->get_column_keys() ));
-
-// add another row (but using an existing column)
-$matrix->set( 'row_3', 'col_1', 99 )->get_dimensions()
-// [ 3, 2 ]
-
-// in case its not clear...
-$matrix->get_row_keys();
-// [ 'row_1', 'row_2', 'row_3 ]
-
-// no change here...
-$matrix->get_column_keys();
-// [ 'col_1', 'col_2' ]
-
-// the set function accepts a callback which will provide the previous value. 
-// this sets a new column to its last value + 5 or 5 by default. 
-$matrix->set( 'row_3', 'col_3', $matrix::get_incrementer( 5 ) );
-
-// delete what we just added.
-$matrix->delete_row( 'row_3' )->delete_column( 'row_3' );
-
-// you can also set a new row or column using a callback that is provided the existing row or column
-// $matrix->set_row_totals( 'some_reducer_function' );
-// $matrix->set_column_totals( 'some_reducer_function' );
- 
 print_r( $matrix->get_matrix() );
-```
-
-Is just an array of arrays:
 
 ```
+
+```
+gives you:
+
 Array
 (
     [row_1] => Array
@@ -91,11 +53,34 @@ Array
 )
 ```
 
-#### Example 2
+```php
 
-This uses an incrementer function to add the number of posts that have the same author and post date. This 
-will give similar results as running an SQL query and grouping by 2 columns and also selecting a count of 
-the total.
+// puts the given rows first. If you pass in a row that doesn't exist it will ignore it.
+// the same methods exists for columns.
+$matrix->apply_row_sort( [ 'row_2', 'row_1' ]);
+
+// alternate sort method accepting an anonymous function. This would sort columns alphabetically.
+$matrix->sort_rows( function( $keys ) {
+    asort( $keys );
+    return $keys;
+});
+
+// the set function also accepts an anonymous function, which will be provided the previous value.
+// the value afterwards will be 100.
+$matrix->set( 'row_1', 'col_1', 95 ); 
+$matrix->set( 'row_1', 'col_1', $matrix::get_incrementer( 5 ) );
+
+$matrix->delete_row( 'row_2' );
+
+// adds a new column to each row whose value is determined by the callback function.
+// useful when your values are numeric.
+$matrix->set_row_totals( function( $row, $key ) { return array_sum( $row ); }, 'total' );
+
+```
+
+#### Real World Example
+
+You could do some similar things in SQL using group by and count. But there's more flexibility when constructing the matrix in PHP.
 
 ```php
 use JMasci\MatrixBuilder;
@@ -108,23 +93,21 @@ foreach ( query_posts_and_join_authors() as $post ) {
     $matrix->set( $post->author_name, date( 'm Y', strtotime( $post->post_date ) ), $matrix::get_incrementer(1));
 }
 
-// sort rows/cols
-$matrix->sort_rows( function( $keys ){
-    asort( $keys );
-    return $keys;
-})->sort_columns( function( $keys ){
-    sort( $keys, SORT_NUMERIC );
+// assume the query already sorted by date. Rows will remain sorted in the order that they were added. 
+
+// sort authors by name
+$matrix->sort_columns( function( $keys ){
+    sort( $keys );
     return $keys;
 });
 
-// we can add cells that sum the values of all rows/columns.
-$matrix->set_row_totals( $matrix::get_array_summer() );
-$matrix->set_column_totals( $matrix::get_array_summer() );
+$matrix->set_row_totals( $matrix::get_array_summer(), '__Total' );
+$matrix->set_column_totals( $matrix::get_array_summer(), '__Total' );
 
-echo your_own_table_rendering_functions( $matrix->convert_to_record_set_with_headings( "Authors vs. Post Dates") );
+$data = $matrix->convert_to_record_set_with_headings( "Authors vs. Post Dates");
 ```
 
-Renders a table such as...
+Useful for rendering a table such as...
 
 | Authors vs. Post Dates | Author 1 | Author 2 | Author 3 | __Total |
 |-----------------------|----------|----------|----------|---------|
@@ -135,8 +118,4 @@ Renders a table such as...
 | February 2020         | 0        | 0        | 0        | 0       |
 | __Total               | 42       | 16       | 22       | 80      |
 
-Possible Future Todo: Allow cells to use formula's as well as primitive values. Formula's can be
-an issue if they involve circular dependencies. Ie. If cell D is the sum A, B, and C, but cell B 
-is equal to cell D times two, then there's nothing we can do to resolve this.
-Nevertheless, maybe there is a way we can catch these circular dependencies and not allow them to exist
-in the first place, but, catching them is also not going to be easy.  
+Possible Future Addition: Allow cells to use formula's. This can get complicated though.
