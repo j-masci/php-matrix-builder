@@ -2,9 +2,9 @@ A matrix in this context is an indexed array of indexed arrays. This library is 
 
 Is a class/encapsulation the best way to do this? Not sure.
 
-Couldn't we just use primitive data structures and write pure functions? Probably. One of the reasons I used a class was that column operations usually end up being a lot more complex than row operations, for example, to delete a column, you loop through each row and delete the column from within each one. While deleting a row is a simple line of code. 
+Couldn't we just use primitive data structures and write pure functions? Probably. One of the reasons I used a class was that column operations have to be performed differently than row operations and are generally harder. So it seemed convenient to just write one row and one column method for each operation.
 
-What I could have done was write a function to convert rows into columns (and column into rows). Then any function you write to operate on rows could be achieved on columns by calling the "inversion" function before and after the row operation (hope that makes sense). Anyways, for this library, all the functionality is wrapped up in a class which mostly encapsulates its data but does not prevent you from manipulating the internal data structure if you need to.
+One thing I could have done was write a function to convert rows into columns (and column into rows). Then any function you write to operate on rows could be achieved on columns by calling the "inversion" function before and after the row operation (hope that makes sense). Anyways, for this library, all the functionality is wrapped up in a class which mostly encapsulates its data but does not prevent you from manipulating the internal data structure if you need to.
 
 ### Basic Usage
 
