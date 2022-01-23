@@ -2,7 +2,9 @@ A matrix in this context is an indexed array of indexed arrays. This library is 
 
 Is a class/encapsulation the best way to do this? Not sure.
 
-Couldn't we just use primitive data structures and write pure functions? Probably. One of the reasons I used a class was that column operations usually end up being a lot more complex than row operations, for example, to delete a column, you loop through each row and delete the column from within each one. While deleting a row is a simple line of code. What I could have done was write a function to convert rows into columns (and column into rows). Then any function you write to operate on rows could be achieved on columns by calling the "inversion" function before and after the row operation (hope that makes sense). Anyways, for this library, all the functionality is wrapped up in a class which mostly encapsulates its data but does not prevent you from manipulating the internal data structure if you need to. Alternatively, you could extend the class and add methods if you need to.  
+Couldn't we just use primitive data structures and write pure functions? Probably. One of the reasons I used a class was that column operations usually end up being a lot more complex than row operations, for example, to delete a column, you loop through each row and delete the column from within each one. While deleting a row is a simple line of code. 
+
+What I could have done was write a function to convert rows into columns (and column into rows). Then any function you write to operate on rows could be achieved on columns by calling the "inversion" function before and after the row operation (hope that makes sense). Anyways, for this library, all the functionality is wrapped up in a class which mostly encapsulates its data but does not prevent you from manipulating the internal data structure if you need to.
 
 ### Basic Usage
 
@@ -53,10 +55,11 @@ Array
 )
 ```
 
+### Sorting, deleting, and settings totals
+
 ```php
 
 // puts the given rows first. If you pass in a row that doesn't exist it will ignore it.
-// the same methods exists for columns.
 $matrix->apply_row_sort( [ 'row_2', 'row_1' ]);
 
 // alternate sort method accepting an anonymous function. This would sort columns alphabetically.
